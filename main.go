@@ -10,6 +10,14 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
+func port() string {
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "3000"
+	}
+	return port
+}
+
 func usage(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	t := `
 <html><title>dogwood-dns-discoverer</title></html>
@@ -17,6 +25,7 @@ func usage(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 <h1>dogwood-dns-discoverer</h1>
 <p>Try:</p>
 <ul>
+<li>This host and port: <a href="/self">/self</a></li>
 <li>Heroku: <a href="/lookup/www.heroku.com">/lookup/www.heroku.com</a></li>
 <li>Domain name reserved for documentation purposes: <a href="/lookup/example.com">/lookup/example.com</a></li>
 `
@@ -28,8 +37,7 @@ func usage(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	fmt.Fprintf(w, t+"</ul>\n</body>\n")
 }
 
-func lookup(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	hostname := p.ByName("hostname")
+func lookupAndRespond(w http.ResponseWriter, hostname string, port string) {
 	addrs, err := net.LookupHost(hostname)
 	if err != nil {
 		log.Printf("%s\n", err)
@@ -40,16 +48,35 @@ func lookup(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 
 	log.Println("Looked up " + hostname)
 	for _, addr := range addrs {
-		fmt.Fprintf(w, addr+"\n")
+		s := addr
+		if net.ParseIP(addr).To4() == nil {
+			s = "[" + addr + "]"
+		}
+		if port == "" {
+			fmt.Fprintf(w, s+"\n")
+		} else {
+			fmt.Fprintf(w, s+":"+port+"\n")
+		}
 	}
 }
 
-func port() string {
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "3000"
+func self(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	hn := os.Getenv("HEROKU_DNS_DYNO_NAME")
+	if hn == "" {
+		hn, _, _ = net.SplitHostPort(r.Host)
 	}
-	return port
+	if hn == "" {
+		hn = r.Host
+	}
+	if hn == "" {
+		hn = "localhost"
+	}
+	lookupAndRespond(w, hn, port())
+}
+
+func lookup(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	hn := p.ByName("hostname")
+	lookupAndRespond(w, hn, "")
 }
 
 func main() {
@@ -57,6 +84,7 @@ func main() {
 
 	router := httprouter.New()
 	router.GET("/", usage)
+	router.GET("/self", self)
 	router.GET("/lookup/:hostname", lookup)
 
 	log.Println("Listening at port " + port)
