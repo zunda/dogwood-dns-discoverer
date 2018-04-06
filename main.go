@@ -25,7 +25,7 @@ func usage(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		t += "<li>This dyno: <a href=\"/lookup/" + h + "\">/lookup/" + h + "</a></li>\n"
 	}
 
-	fmt.Fprintf(w, t + "</ul>\n</body>\n")
+	fmt.Fprintf(w, t+"</ul>\n</body>\n")
 }
 
 func lookup(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
@@ -39,7 +39,7 @@ func lookup(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 
 	log.Println("Looked up " + p.ByName("hostname"))
 	for _, addr := range addrs {
-		fmt.Fprintf(w, addr + "\n")
+		fmt.Fprintf(w, addr+"\n")
 	}
 }
 
