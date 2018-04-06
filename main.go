@@ -44,11 +44,16 @@ func lookup(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	}
 }
 
-func main() {
+func port() string {
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "3000"
 	}
+	return port
+}
+
+func main() {
+	port := port()
 
 	router := httprouter.New()
 	router.GET("/", usage)
