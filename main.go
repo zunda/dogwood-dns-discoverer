@@ -17,6 +17,10 @@ func usage(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 `)
 }
 
+func dig(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	fmt.Fprintf(w, p.ByName("hostname"))
+}
+
 func main() {
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -25,6 +29,7 @@ func main() {
 
 	router := httprouter.New()
 	router.GET("/", usage)
+	router.GET("/dig/:hostname", dig)
 
 	log.Println("Listening at port " + port)
 	err := http.ListenAndServe(":"+port, router)
