@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"os"
 
@@ -13,12 +14,23 @@ func usage(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	fmt.Fprintf(w, `
 <html><title>dogwood-dns-discoverer</title></html>
 <h1>dogwood-dns-discoverer</h1>
-<p>Try <a href="/dig/example.com">/dig/example.com</a>.</p>
+<p>Try <a href="/lookup/example.com">/lookup/example.com</a>.</p>
 `)
 }
 
-func dig(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	fmt.Fprintf(w, p.ByName("hostname"))
+func lookup(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	addrs, err := net.LookupHost(p.ByName("hostname"))
+	if err != nil {
+		log.Printf("%s\n", err)
+		w.WriteHeader(500)
+		fmt.Fprintf(w, "%s\n", err)
+		return
+	}
+
+	log.Println("Looked up " + p.ByName("hostname"))
+	for _, addr := range addrs {
+		fmt.Fprintf(w, addr + "\n")
+	}
 }
 
 func main() {
@@ -29,7 +41,7 @@ func main() {
 
 	router := httprouter.New()
 	router.GET("/", usage)
-	router.GET("/dig/:hostname", dig)
+	router.GET("/lookup/:hostname", lookup)
 
 	log.Println("Listening at port " + port)
 	err := http.ListenAndServe(":"+port, router)
