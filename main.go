@@ -29,7 +29,8 @@ func usage(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 }
 
 func lookup(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	addrs, err := net.LookupHost(p.ByName("hostname"))
+	hostname := p.ByName("hostname")
+	addrs, err := net.LookupHost(hostname)
 	if err != nil {
 		log.Printf("%s\n", err)
 		w.WriteHeader(500)
@@ -37,7 +38,7 @@ func lookup(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		return
 	}
 
-	log.Println("Looked up " + p.ByName("hostname"))
+	log.Println("Looked up " + hostname)
 	for _, addr := range addrs {
 		fmt.Fprintf(w, addr+"\n")
 	}
