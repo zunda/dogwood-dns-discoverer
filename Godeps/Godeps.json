@@ -1,0 +1,15 @@
+{
+	"ImportPath": "dogwood-dns-discoverer",
+	"GoVersion": "go1.10",
+	"GodepVersion": "v80",
+	"Packages": [
+		"./..."
+	],
+	"Deps": [
+		{
+			"ImportPath": "github.com/julienschmidt/httprouter",
+			"Comment": "v1.1-61-gd189839",
+			"Rev": "d1898390779332322e6b5ca5011da4bf249bb056"
+		}
+	]
+}
