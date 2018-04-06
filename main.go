@@ -11,11 +11,21 @@ import (
 )
 
 func usage(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	fmt.Fprintf(w, `
+	t := `
 <html><title>dogwood-dns-discoverer</title></html>
+<body>
 <h1>dogwood-dns-discoverer</h1>
-<p>Try <a href="/lookup/example.com">/lookup/example.com</a>.</p>
-`)
+<p>Try:</p>
+<ul>
+<li>Heroku: <a href="/lookup/www.heroku.com">/lookup/www.heroku.com</a></li>
+<li>Domain name reserved for documentation purposes: <a href="/lookup/example.com">/lookup/example.com</a></li>
+`
+	h := os.Getenv("HEROKU_DNS_DYNO_NAME")
+	if h != "" {
+		t += "<li>This dyno: <a href=\"/lookup/" + h + "\">/lookup/" + h + "</a></li>\n"
+	}
+
+	fmt.Fprintf(w, t + "</ul>\n</body>\n")
 }
 
 func lookup(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
