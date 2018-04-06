@@ -62,16 +62,18 @@ func lookupAndRespond(w http.ResponseWriter, hostname string, port string) {
 
 func self(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	hn := os.Getenv("HEROKU_DNS_DYNO_NAME")
+	pt := port()
 	if hn == "" {
-		hn, _, _ = net.SplitHostPort(r.Host)
+		hn, pt, _ = net.SplitHostPort(r.Host)
 	}
 	if hn == "" {
 		hn = r.Host
+		pt = ""
 	}
 	if hn == "" {
 		hn = "localhost"
 	}
-	lookupAndRespond(w, hn, port())
+	lookupAndRespond(w, hn, pt)
 }
 
 func lookup(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
