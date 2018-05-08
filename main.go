@@ -61,7 +61,7 @@ func lookupAndRespond(w http.ResponseWriter, hostname string, port string) {
 }
 
 func self(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	hn := os.Getenv("HEROKU_DNS_DYNO_NAME")
+	hn := os.Getenv("HEROKU_PRIVATE_IP")
 	pt := port()
 	if hn == "" {
 		hn, pt, _ = net.SplitHostPort(r.Host)
